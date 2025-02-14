@@ -25,7 +25,7 @@ int divide1(int numerator, int denominator, int& result) {
  * @throws std::invalid_argument in case the denominator is 0.
  */
 int divide2(int numerator, int denominator) {
-    if (denominator == 0) throw std::invalid_argument("Denominator cannot be zero");
+    if (denominator == 0) throw std::invalid_argument("Denominator is zero");
     return numerator / denominator;
 }
 
@@ -37,12 +37,12 @@ int divide2(int numerator, int denominator) {
 
 // Now define the function
 std::expected<int, std::string> divide3(int numerator, int denominator) {
-    if (denominator == 0) return std::unexpected{"Denominator cannot be zero"};
+    if (denominator == 0) return std::unexpected{"Denominator is zero"};
     return numerator / denominator;
 }
 
 std::expected<int, std::string> square_root(int n) {
-    if (n < 0) return std::unexpected{"Cannot calculate the square root of a negative number"};
+    if (n < 0) return std::unexpected{"Negative number"};
     return std::sqrt(n);
 }
 
@@ -93,6 +93,24 @@ int main() {
     auto result5 = divide3(10, -1).and_then(square_root);
 
     std::cout << std::format("Result: {}\n", result5.error());
+
+    std::cout << std::sqrt(-1) << '\n';
+
+    // transform
+    // Multiply by PI
+    auto result6 = divide3(10, 1).and_then(square_root).transform([](int n) { return n * 42; });
+
+    // value_or
+    auto result7 = divide3(10, -2)
+            .and_then(square_root)
+            .transform([](int n) { return std::format("Result: {}", n); })
+            .transform_error([](const std::string& err) { return std::format("Error: {}", err); });
+
+    if (result7.has_value()) {
+        std::cout << result7.value();
+    } else {
+        std::cout << result7.error();
+    }
 
     return 0;
 }
