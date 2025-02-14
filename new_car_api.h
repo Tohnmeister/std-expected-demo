@@ -15,7 +15,7 @@ struct DiagnosticData {
 
 class CarStatus {
 public:
-    std::expected<DiagnosticData, CarApiError> get_diagnostic_data() const {
+    [[nodiscard]] std::expected<DiagnosticData, CarApiError> get_diagnostic_data() const {
         const bool success = rand() % 2;
         if (!success)
             return std::unexpected{CarApiError::DATA_NOT_AVAILABLE};
@@ -25,7 +25,7 @@ public:
 
 };
 
-std::expected<CarStatus, CarApiError> fetch_car_status_through_http() {
+[[nodiscard]] std::expected<CarStatus, CarApiError> fetch_car_status_through_http() {
     const bool success = rand() % 2;
 
     if (!success)
@@ -34,7 +34,7 @@ std::expected<CarStatus, CarApiError> fetch_car_status_through_http() {
     return CarStatus{};
 }
 
-std::expected<CarStatus, CarApiError> fetch_car_status_through_cache() {
+[[nodiscard]] std::expected<CarStatus, CarApiError> fetch_car_status_through_cache() {
     const bool success = rand() % 2;
 
     if (!success)
