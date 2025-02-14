@@ -1,6 +1,7 @@
 #include <iostream>
 #include <format>
 #include <expected>
+#include <complex>
 
 /**
  * Simple function that divides two integers. Its return value is not the division result, but rather an status code.
@@ -33,28 +34,16 @@ int divide2(int numerator, int denominator) {
 // - Exceptions must be documented and handled well, otherwise you'll end up with uncaught exceptions, possibly
 //   terminating the program.
 
-// Same function, but now with std::expected
-// First, create an error code enum
-enum class division_error {
-    division_by_zero
-};
-
-template <>
-struct std::formatter<division_error> : std::formatter<std::string_view> {
-    auto format(division_error d, std::format_context& ctx) const {
-        std::string_view result = "unknown enum value";
-        switch (d) {
-            case division_error::division_by_zero: result = "division_by_zero"; break;
-        }
-
-        return std::formatter<std::string_view>::format(result, ctx);
-    }
-};
 
 // Now define the function
-std::expected<int, division_error> divide3(int numerator, int denominator) {
-    if (denominator == 0) return std::unexpected{division_error::division_by_zero};
+std::expected<int, std::string> divide3(int numerator, int denominator) {
+    if (denominator == 0) return std::unexpected{"Denominator cannot be zero"};
     return numerator / denominator;
+}
+
+std::expected<int, std::string> square_root(int n) {
+    if (n < 0) return std::unexpected{"Cannot calculate the square root of a negative number"};
+    return std::sqrt(n);
 }
 
 // Pitfalls
@@ -82,7 +71,7 @@ int main() {
     // Using exceptions
     try {
         result = divide2(10, 0);
-        std::cout << "Result: " << result << '\n';
+        std::cout << std::format("Result: {}\n", result);
     } catch (const std::invalid_argument& e) {
         std::cout << std::format("Error: {}\n", e.what());
     }
@@ -90,9 +79,20 @@ int main() {
     // Using std::exception
     auto result3 = divide3(10, 0);
     if (result3.has_value()) {
-        std::cout << "Result: " << result3.value() << '\n';
+        std::cout << std::format("Result: {}\n", result3.value());
     } else {
         std::cout << std::format("Error: {}\n", result3.error());
     }
+
+    // Now let's say, I'd like to have a fallback value, in case something goes wrong.
+    int result4 = divide3(10, 0).value_or(42);
+    std::cout << std::format("Result: {}\n", result4);
+
+    // and_then
+    // Now let's say, I'd like to continue with the value, putting it into another function that might fail.
+    auto result5 = divide3(10, -1).and_then(square_root);
+
+    std::cout << std::format("Result: {}\n", result5.error());
+
     return 0;
 }
