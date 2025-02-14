@@ -112,5 +112,8 @@ int main() {
         std::cout << result7.error();
     }
 
+    // Now the entire example but then with car_status and diagnostic_data.
+    
+
     return 0;
 }
