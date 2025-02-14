@@ -15,7 +15,7 @@ struct DiagnosticData {
 
 class CarStatus {
 public:
-    std::expected<DiagnosticData, CarApiError> get_diagnostic_data() {
+    std::expected<DiagnosticData, CarApiError> get_diagnostic_data() const {
         const bool success = rand() % 2;
         if (!success)
             return std::unexpected{CarApiError::DATA_NOT_AVAILABLE};

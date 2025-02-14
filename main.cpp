@@ -1,8 +1,15 @@
 #include <iostream>
 #include <format>
 #include <expected>
-#include <complex>
+#include <complex>]
+
+//#define OLD_CAR_API
+
+#ifdef OLD_CAR_API
 #include "old_car_api.h"
+#else
+#include "new_car_api.h"
+#endif
 
 /**
  * Simple function that divides two integers. Its return value is not the division result, but rather an status code.
@@ -115,6 +122,7 @@ int main() {
         std::cout << result7.error() << '\n';
     }
 
+#ifdef OLD_CAR_API
     // Now the entire example but then with CarStatus and DiagnosticData.
     std::unique_ptr<CarStatus> car_status;
     if (fetch_car_status_through_http(car_status) == CarApiResult::SUCCESS || fetch_car_status_through_cache(car_status) == CarApiResult::SUCCESS) {
@@ -127,6 +135,27 @@ int main() {
     } else {
         std::cout << "Error occurred fetching car status\n";
     }
+#else
+    // Now the entire example but then with CarStatus and DiagnosticData.
+    auto result8 = fetch_car_status_through_http()
+        .or_else([](CarApiError error) { return fetch_car_status_through_cache(); })
+        .and_then([](const CarStatus& car_status) { return car_status.get_diagnostic_data(); })
+        .transform([](const DiagnosticData& diag_data) { return diag_data.error_code; })
+        .transform_error([](CarApiError error) {
+            switch (error) {
+                case CarApiError::NO_CONNECTION: return "NO_CONNECTION";
+                case CarApiError::CACHE_CORRUPT: return "CACHE_CORRUPT";
+                case CarApiError::DATA_NOT_AVAILABLE: return "DATA_NOT_AVAILABLE";
+                default: return "UNKNOWN ERROR";
+            }
+        });
+
+    if (result8.has_value()) {
+        std::cout << std::format("Car diagnostic data error code: {}", result8.value());
+    } else {
+        std::cout << std::format("Error occurred while trying to fetch car diagnostic error code: {}", result8.error());
+    }
+#endif
 
     return 0;
 }

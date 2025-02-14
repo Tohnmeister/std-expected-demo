@@ -17,7 +17,7 @@ struct DiagnosticData {
 
 class CarStatus {
 public:
-    CarApiResult get_diagnostic_data(std::unique_ptr<DiagnosticData>& diagnostic_data) {
+    CarApiResult get_diagnostic_data(std::unique_ptr<DiagnosticData>& diagnostic_data) const {
         const bool success = rand() % 2;
         if (!success) {
             return CarApiResult::DATA_NOT_AVAILABLE;
