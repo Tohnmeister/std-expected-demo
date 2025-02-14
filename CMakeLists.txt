@@ -4,5 +4,6 @@ project(std_expected_demo)
 set(CMAKE_CXX_STANDARD 23)
 
 add_executable(std_expected_demo main.cpp
-        car.h
+        new_car_api.h
+        old_car_api.h
 )

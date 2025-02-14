@@ -2,18 +2,19 @@
 #include <format>
 #include <expected>
 #include <complex>
+#include "old_car_api.h"
 
 /**
  * Simple function that divides two integers. Its return value is not the division result, but rather an status code.
  * @param numerator Numerator
  * @param denominator Denominator. Must not be 0.
  * @param result The result of the division, or unchanged if an error occurred.
- * @return 0 if success, -1 otherwise
+ * @return 0 if SUCCESS, -1 otherwise
  */
 int divide1(int numerator, int denominator, int& result) {
     if (denominator == 0) return -1; // Error code
     result = numerator / denominator;
-    return 0; // Success
+    return 0; // SUCCESS
 }
 
 /**
@@ -60,6 +61,8 @@ std::expected<int, std::string> square_root(int n) {
 // - value() on an rvalue std::expected
 
 int main() {
+    srand(time(nullptr));
+
     // Using return codes
     int result;
     if (divide1(10, 0, result) != 0) {
@@ -107,13 +110,23 @@ int main() {
             .transform_error([](const std::string& err) { return std::format("Error: {}", err); });
 
     if (result7.has_value()) {
-        std::cout << result7.value();
+        std::cout << result7.value() << '\n';
     } else {
-        std::cout << result7.error();
+        std::cout << result7.error() << '\n';
     }
 
-    // Now the entire example but then with car_status and diagnostic_data.
-    
+    // Now the entire example but then with CarStatus and DiagnosticData.
+    std::unique_ptr<CarStatus> car_status;
+    if (fetch_car_status_through_http(car_status) == CarApiResult::SUCCESS || fetch_car_status_through_cache(car_status) == CarApiResult::SUCCESS) {
+        std::unique_ptr<DiagnosticData> diagnostic_data;
+        if (car_status->get_diagnostic_data(diagnostic_data) == CarApiResult::SUCCESS) {
+            std::cout << std::format("Car Diagnostics Error Code: {}\n", diagnostic_data->error_code);
+        } else {
+            std::cout << "Error occurred fetching diagnostic data\n";
+        }
+    } else {
+        std::cout << "Error occurred fetching car status\n";
+    }
 
     return 0;
 }
